@@ -1,4 +1,3 @@
-
 const backgroundColor = document.getElementById('background-color-picker');
 const textColor = document.getElementById('text-color');
 const clear = document.getElementById('clear');
@@ -19,52 +18,39 @@ textColor.addEventListener('change', (e) => {
 
 canvas.addEventListener('mousedown', (e) => {
     isDrawing = true;
-    lastX = e.offsetX;
-    lastY = e.offsetY;
+    [lastX, lastY] = [e.offsetX, e.offsetY];
 });
 
 canvas.addEventListener('touchstart', (e) => {
     isDrawing = true;
-    lastX = e.touches[0].clientX;
-    lastY = e.touches[0].clientY;
-    console.log('Touch start:', lastX, lastY);
+    [lastX, lastY] = [e.touches[0].clientX, e.touches[0].clientY];
 });
 
 canvas.addEventListener('mousemove', (e) => {
     if (isDrawing) {
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.stroke();
-        lastX = e.offsetX;
-        lastY = e.offsetY;
+        drawLine(lastX, lastY, e.offsetX, e.offsetY);
+        [lastX, lastY] = [e.offsetX, e.offsetY];
     }
 });
 
 canvas.addEventListener('touchmove', (e) => {
     if (isDrawing) {
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(e.touches[0].clientX, e.touches[0].clientY);
-        ctx.stroke();
-        lastX = e.touches[0].clientX;
-        lastY = e.touches[0].clientY;
-        console.log('Touch move:', lastX, lastY);
+        drawLine(lastX, lastY, e.touches[0].clientX, e.touches[0].clientY);
+        [lastX, lastY] = [e.touches[0].clientX, e.touches[0].clientY];
     }
 });
 
-canvas.addEventListener('mouseup', (e) => {
+canvas.addEventListener('mouseup', () => {
     isDrawing = false;
 });
 
-canvas.addEventListener('touchcancel', (e) => {
+canvas.addEventListener('touchend', () => {
     isDrawing = false;
-    console.log('Touch end');
 });
 
 backgroundColor.addEventListener('change', (e) => {
     ctx.fillStyle = e.target.value;
-    ctx.fillRect(0, 0, 1000, 500);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 });
 
 fontSize.addEventListener('change', (e) => {
@@ -88,7 +74,15 @@ retrive.addEventListener('click', () => {
     if (savedCanvas) {
         let img = new Image();
         img.src = savedCanvas;
-        ctx.drawImage(img, 0, 0);
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+        };
     }
 });
 
+function drawLine(x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+}
